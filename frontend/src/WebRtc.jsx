@@ -211,7 +211,8 @@ function WebRtc({ roomId, userId }) {
                 autoPlay
                 id="localstream"
                 style={{ backgroundColor: 'black' }}
-                width="400px"
+                width="200px"
+                height="200px"
             ></video>
 
             {[...remoteTracks.values()].map((track, index) => {
@@ -228,7 +229,8 @@ function WebRtc({ roomId, userId }) {
                         playsInline
                         autoPlay
                         style={{ backgroundColor: 'black', margin: "5px" }}
-                        width="400px"
+                        width="200px"
+                        height="200px"
                     ></video>
                 );
             })}
