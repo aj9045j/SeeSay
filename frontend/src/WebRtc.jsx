@@ -5,7 +5,6 @@ const connections = new Map();
 
 function WebRtc({ roomId, userId }) {
     const myElementRef = useRef(null);
-    // const myremote = useRef(null);
     const [renderCount, setRenderCount] = useState(0);
     const [stream, setStream] = useState(null);
     const [remoteTracks, setRemoteTracks] = useState(new Map());
@@ -24,7 +23,7 @@ function WebRtc({ roomId, userId }) {
             setStream(stream);
             console.log('stream from navigation', stream);
         });
-    }, [roomId, userId]);
+    }, []);
 
     const handleTrack = async event => {
 
@@ -40,7 +39,7 @@ function WebRtc({ roomId, userId }) {
 
     useEffect(() => {
         if (stream) {
-            const socket = io.connect('http://localhost:3001');
+            const socket = io.connect('https://video-call-1wu3.onrender.com');
             console.log('socket', socket);
 
             socket.on('newUser', () => {
@@ -201,9 +200,6 @@ function WebRtc({ roomId, userId }) {
 
 
     }, [stream]);
-    useEffect(() => {
-        console.log("new connection emit");
-    }, [connections])
 
     return (
         <div>
@@ -217,17 +213,6 @@ function WebRtc({ roomId, userId }) {
                 style={{ backgroundColor: 'black' }}
                 width="400px"
             ></video>
-            {/* <video
-                src=""
-                ref={myremote}
-                playsInline
-                autoPlay
-                muted
-                id='remotestream'
-                style={{ backgroundColor: 'pink' }}
-            ></video> */}
-
-
 
             {[...remoteTracks.values()].map((track, index) => {
                 console.log("track", track);
