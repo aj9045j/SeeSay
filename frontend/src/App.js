@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-import WebRtc from './webrtc';
+import WebRtc from './WebRtc';
 import "./style/global.css"
 
 function App() {
