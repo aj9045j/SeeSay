@@ -1,4 +1,5 @@
 *{
     background-color: rgba(19, 19, 19, 0.895);
     padding: 5px;
+    display: flexbox;
 }

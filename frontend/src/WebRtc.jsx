@@ -30,7 +30,7 @@ function WebRtc({ roomId, userId }) {
 
         if (stream) {
 
-            const socket = io.connect('http://localhost:3001');
+            const socket = io.connect('https://video-call-1wu3.onrender.com');
 
             socket.on('newUser', () => {
 
@@ -216,8 +216,7 @@ function WebRtc({ roomId, userId }) {
             ></video>
 
             {[...remoteTracks.values()].map((track, index) => {
-                console.log("track", track);
-
+            
                 return (
                     <video
                         key={index}
