@@ -12,60 +12,84 @@ const io = socketIO(server, {
 const connectedUsers = {};
 io.on("connection", (socket) => {
 
+    console.log("user joined", socket.id);
 
-    console.log("new user connected", socket.id);
     socket.emit("newUser");
 
     socket.on("joinUser", ({ roomId, userId }) => {
 
-
-
         connectedUsers[socket.id] = {
-            userId: roomId,
+            roomId: roomId,
             userId: userId
         };
-
-        console.log("joinuser emit");
         const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
-        console.log(clients);
+
         clients.forEach((clientId) => {
-            console.log(clientId);
-            io.to(socket.id).emit("createOffer", { roomId: roomId, clientId: clientId, socketId: socket.id });
+
+            io.to(socket.id).emit("createOffer", {
+                roomId: roomId,
+                clientId: clientId,
+                socketId: socket.id
+            });
+
         })
         socket.join(roomId);
     })
 
     socket.on("sendOffer", ({ clientId, offer, socketId }) => {
 
-        io.to(clientId).emit("createAns", { clientId: clientId, offer: offer, socketId: socketId });
-        //console.log(roomId,clientId);
+        io.to(clientId).emit("createAns", {
+            clientId: clientId,
+            offer: offer,
+            socketId: socketId
+        });
+
     })
 
     socket.on("sendAns", ({ clientId, ans, socketId }) => {
-        console.log(ans);
-        console.log(clientId);
-        io.to(socketId).emit("setAns", ({ clientId: clientId, ans: ans, socketId: socketId }));
+        io.to(socketId).emit("setAns", ({
+            clientId: clientId,
+            ans: ans,
+            socketId: socketId
+        }));
     })
 
-    socket.on('disconnect', () => {
-        const disconnectedUser = connectedUsers[socket.id];
-        console.log('A user disconnected');
-        socket.leave(disconnectedUser.roomId);
+    socket.on('disconnect', async () => {
+
+        console.log('A user disconnected', socket.id);
+        if (connectedUsers[socket.id])
+            await socket.leave(connectedUsers[socket.id].roomId);
         delete connectedUsers[socket.id];
 
     });
+
     socket.on("nego", ({ clientId, socketId }) => {
-        io.to(socketId).emit("nego:coffer", { socketId: socketId, clientId: clientId });
+
+        io.to(socketId).emit("nego:coffer", {
+            socketId: socketId,
+            clientId: clientId
+        });
     })
+
     socket.on("nego:soffer", ({ offer, socketId, clientId }) => {
-        io.to(clientId).emit("nego:cans", { socketId: socketId, offer: offer, clientId: clientId })
+
+        io.to(clientId).emit("nego:cans", {
+            socketId: socketId,
+            offer: offer,
+            clientId: clientId
+        })
     })
     socket.on("nego:sans", ({ socketId, ans, clientId }) => {
-        io.to(socketId).emit("nego:setlocal", { socketId: socketId, ans: ans, clientId: clientId });
 
+        io.to(socketId).emit("nego:setlocal", {
+            socketId: socketId,
+            ans: ans,
+            clientId: clientId
+        });
     })
+
     socket.on('sendIceCandidate', ({ roomId, clientId, candidate }) => {
-        console.log(`Sending ICE candidate from ${socket.id} to room ${roomId} (client: ${clientId})`);
+        
         socket.to(roomId).emit('receiveIceCandidate', { clientId, candidate });
     });
 
