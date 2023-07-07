@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
+import { useLocation } from 'react-router-dom';
 
 const connections = new Map();
 
 function WebRtc({ roomId, userId }) {
 
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const user = searchParams.get('userId');
+    const room = searchParams.get('roomId');
     const myElementRef = useRef(null);
     const [stream, setStream] = useState(null);
     const [remoteTracks, setRemoteTracks] = useState(new Map());
@@ -35,8 +40,8 @@ function WebRtc({ roomId, userId }) {
             socket.on('newUser', () => {
 
                 socket.emit('joinUser', {
-                    roomId: roomId,
-                    userId: userId
+                    roomId: room,
+                    userId: user
                 });
 
             });
@@ -61,7 +66,7 @@ function WebRtc({ roomId, userId }) {
 
                     if (event.candidate) {
                         socket.emit('sendIceCandidate', {
-                            roomId: roomId,
+                            roomId: room,
                             clientId: clientId,
                             candidate: event.candidate
                         });
@@ -110,7 +115,7 @@ function WebRtc({ roomId, userId }) {
 
                     if (event.candidate) {
                         socket.emit('sendIceCandidate', {
-                            roomId: roomId,
+                            roomId: room,
                             clientId: clientId,
                             candidate: event.candidate
                         });
@@ -155,6 +160,7 @@ function WebRtc({ roomId, userId }) {
             });
 
             socket.on('nego:coffer', async ({ socketId, clientId }) => {
+
                 let peer = connections.get(clientId);
                 let offer = await peer.createOffer();
                 await peer.setLocalDescription(offer);
@@ -216,7 +222,7 @@ function WebRtc({ roomId, userId }) {
             ></video>
 
             {[...remoteTracks.values()].map((track, index) => {
-            
+
                 return (
                     <video
                         key={index}
