@@ -1,28 +1,75 @@
 import { useEffect, useRef, useState } from 'react';
-import io from 'socket.io-client';
 import { useLocation } from 'react-router-dom';
-
+import socketInit from './socket-io/socket';
+import Chat from './messages/chat';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 const connections = new Map();
 
-function WebRtc({ roomId, userId }) {
+function WebRtc(props) {
 
     const location = useLocation();
+    const [facingMode, setFacingMode] = useState('user');
     const searchParams = new URLSearchParams(location.search);
     const user = searchParams.get('userId');
     const room = searchParams.get('roomId');
     const myElementRef = useRef(null);
     const [stream, setStream] = useState(null);
     const [remoteTracks, setRemoteTracks] = useState(new Map());
+    const [cameraEnabled, setCameraEnabled] = useState(true);
+    const [show, setShow] = useState(false);
+    const [message, setMessage] = useState('');
+    const [messages, setMessages] = useState([]);
+    const socketRef = useRef(null);
 
-
+    const handleInputChange = (event) => {
+        event.preventDefault();
+        const inputMessage = event.target.value;
+        setMessage(inputMessage);
+    };
+    const handleSendMessage = () => {
+        if (message.trim() !== '') {
+            console.log(message);
+            socketRef.current.emit('sendMessage', {
+                message: message,
+                roomId: room,
+                userId: user
+            });
+            setMessage('');
+        }
+    }
+    const showMessage = () => {
+        setShow(!show);
+    };
     useEffect(() => {
 
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: false }).then(stream => {
             myElementRef.current.srcObject = stream;
             setStream(stream);
 
         });
-    }, []);
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [facingMode]);
+
+    const changeCamera = async () => {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const rearCamera = devices.find(device => device.kind === 'videoinput' && device.label.toLowerCase().includes('back'));
+        if (rearCamera) setFacingMode(prevMode => prevMode === 'environment' ? 'user' : 'environment');
+    };
+
+    const toggleCamera = () => {
+        setCameraEnabled(prevState => !prevState);
+        if (stream) {
+            stream.getVideoTracks().forEach(track => {
+                track.enabled = !cameraEnabled;
+            });
+        }
+    };
+
 
     const handleTrack = async event => {
 
@@ -33,12 +80,17 @@ function WebRtc({ roomId, userId }) {
 
     useEffect(() => {
 
+        const socket = socketInit();
+        socketRef.current = socket;
+        socket.on('message', (message) => {
+            console.log(message);
+
+            setMessages((prevMessages) => [...prevMessages, message]);
+        });
         if (stream) {
 
-            const socket = io.connect('https://video-call-1wu3.onrender.com');
-
+            // const socket = socketInit();
             socket.on('newUser', () => {
-
                 socket.emit('joinUser', {
                     roomId: room,
                     userId: user
@@ -47,6 +99,7 @@ function WebRtc({ roomId, userId }) {
             });
 
             socket.on('createOffer', async ({ roomId, clientId, socketId }) => {
+
                 let peer = await new RTCPeerConnection({
                     iceServers: [
                         {
@@ -122,7 +175,6 @@ function WebRtc({ roomId, userId }) {
                     }
                 }
                 connections.set(socketId, peer);
-
                 if (stream) {
                     stream.getTracks().forEach(track => {
                         peer.addTrack(track, stream);
@@ -187,11 +239,12 @@ function WebRtc({ roomId, userId }) {
 
                 let peer = connections.get(clientId);
                 await peer.setRemoteDescription(ans);
+
             });
 
             socket.on('receiveIceCandidate', async ({ clientId, candidate }) => {
-
-                let peer = connections.get(clientId);
+                candidate.usernameFragment = null;
+                let peer = await connections.get(clientId);
 
                 if (peer) {
 
@@ -205,42 +258,85 @@ function WebRtc({ roomId, userId }) {
 
         }
 
+
+
+
+
+
+
+
     }, [stream]);
 
     return (
-        <div>
+        
+        <>
+        <button onClick={showMessage}>newMessage</button>
+            {(show && <div id="message-box">
+                {messages.map((msg, index) => (
+                    <div key={index}>{msg.userId}: {msg.message}</div>
+                ))}
 
-            <video
-                src=""
-                muted
-                ref={myElementRef}
-                autoPlay
-                id="localstream"
-                style={{ backgroundColor: 'black' }}
-                width="200px"
-                height="200px"
-            ></video>
+                <div>
+                    <input
+                        type="text"
+                        value={message}
+                        onChange={handleInputChange}
+                    />
+                    <button onClick={handleSendMessage}>Send</button>
+                </div>
+            </div>
+            )}
 
-            {[...remoteTracks.values()].map((track, index) => {
 
-                return (
+
+
+
+            <button onClick={changeCamera}>Toggle Camera</button>
+            <button onClick={toggleCamera}>{cameraEnabled ? 'Turn Off Camera' : 'Turn On Camera'}</button>
+            <div className='flex'>
+                <div className="video-container">
                     <video
-                        key={index}
-                        ref={video => {
-                            if (video) {
-                                video.srcObject = track;
-                            }
-                        }}
-                        playsInline
+                        src=""
+                        muted
+                        ref={myElementRef}
                         autoPlay
-                        style={{ backgroundColor: 'black', margin: "5px" }}
-                        width="200px"
-                        height="200px"
-                    ></video>
-                );
-            })}
+                        id="localstream"
+                        style={{ borderRadius: '55px', margin: "5px" }}
+                        height="300px"
 
-        </div>
+
+                    ></video>
+                </div>
+
+                {
+                    [...remoteTracks.values()].map((track, index) => {
+
+                        return (
+                            <div className="video-container">
+                                <video
+                                    key={index}
+                                    ref={video => {
+                                        if (video) {
+                                            video.srcObject = track;
+                                        }
+                                    }}
+                                    playsInline
+                                    autoPlay
+                                    style={{ borderRadius: '55px', margin: "5px" }}
+                                    height="300px"
+                                    max-height="300px"
+                                // width="auto"
+                                ></video>
+                            </div>
+                        );
+                    })
+                }
+
+            </div >
+
+
+        </>
+
     );
 }
 

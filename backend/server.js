@@ -17,7 +17,7 @@ io.on("connection", (socket) => {
     socket.emit("newUser");
 
     socket.on("joinUser", ({ roomId, userId }) => {
-
+        console.log("joinuser");
         connectedUsers[socket.id] = {
             roomId: roomId,
             userId: userId
@@ -89,8 +89,18 @@ io.on("connection", (socket) => {
     })
 
     socket.on('sendIceCandidate', ({ roomId, clientId, candidate }) => {
-        
+
         socket.to(roomId).emit('receiveIceCandidate', { clientId, candidate });
+    });
+
+
+    socket.on('sendMessage', async ({ message, roomId, userId }) => {
+
+        io.to(roomId).emit('message', {
+            message: message,
+            userId: userId
+        });
+
     });
 
 })
@@ -116,3 +126,5 @@ const port = 3001;
 server.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
+
+
