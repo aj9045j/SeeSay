@@ -322,20 +322,117 @@ button:active::after {
 
 }
 
-#message-box {
+/* #message-box {
     color: white;
     margin: 2px;
     position: absolute;
     z-index: 1;
     background-color: #111;
     width: 20%;
+} */
+
+
+
+
+
+.new-message-dot {
+    position: absolute;
+    top: 8px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
 }
 
 
+.inbox-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
 
+.inbox-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.3s ease;
+}
 
+.inbox-icon:hover {
+    color: #333;
+}
 
+.inbox-message {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.3s ease;
+    max-width: 300px;
+    z-index: 9999;
+}
 
+#message-box {
+    overflow-y: auto;
+    max-height: 200px;
+}
 
-/* Add your desired styling and animations here */
+/* Additional styles to make the inbox message visually appealing */
+.inbox-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+}
 
+.inbox-message {
+    max-width: 300px;
+}
+
+.message {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.user {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.content {
+    color: #555;
+}
+
+.input-container input {
+    flex: 1;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+.input-container button {
+    padding: 5px 10px;
+    margin-left: 10px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    outline: none;
+}
+
+.input-container button:hover {
+    background-color: #45a049;
+}

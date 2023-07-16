@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import socketInit from './socket-io/socket';
 import Chat from './messages/chat';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { FaEnvelope } from 'react-icons/fa';
 const connections = new Map();
 
 function WebRtc(props) {
@@ -21,6 +20,7 @@ function WebRtc(props) {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
+    const [newMessage, setNewMessage] = useState(false);
 
     const handleInputChange = (event) => {
         event.preventDefault();
@@ -35,12 +35,16 @@ function WebRtc(props) {
                 roomId: room,
                 userId: user
             });
+
             setMessage('');
         }
     }
     const showMessage = () => {
+        setNewMessage(!newMessage);
         setShow(!show);
     };
+
+
     useEffect(() => {
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: false }).then(stream => {
@@ -83,6 +87,7 @@ function WebRtc(props) {
         const socket = socketInit();
         socketRef.current = socket;
         socket.on('message', (message) => {
+            setNewMessage(true);
             console.log(message);
 
             setMessages((prevMessages) => [...prevMessages, message]);
@@ -268,24 +273,38 @@ function WebRtc(props) {
     }, [stream]);
 
     return (
-        
-        <>
-        <button onClick={showMessage}>newMessage</button>
-            {(show && <div id="message-box">
-                {messages.map((msg, index) => (
-                    <div key={index}>{msg.userId}: {msg.message}</div>
-                ))}
 
-                <div>
-                    <input
-                        type="text"
-                        value={message}
-                        onChange={handleInputChange}
-                    />
-                    <button onClick={handleSendMessage}>Send</button>
+        <>
+
+            <div className="inbox-container">
+                <div className="inbox-icon" onClick={showMessage}>
+                    <FaEnvelope />
+                    {newMessage && <div className="new-message-dot" />}
                 </div>
+                {show && (
+                    <div className="inbox-message">
+                        <div id="message-box">
+                            {messages.map((msg, index) => (
+                                <div key={index} className="message">
+                                    <span className="user">{msg.userId}: </span>
+                                    <span className="content">{msg.message}</span>
+                                </div>
+                            ))}
+
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    value={message}
+                                    onChange={handleInputChange}
+                                    placeholder="Type your message..."
+                                />
+                                <button onClick={handleSendMessage}>Send</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
-            )}
+
 
 
 
@@ -341,3 +360,7 @@ function WebRtc(props) {
 }
 
 export default WebRtc;
+
+
+
+
