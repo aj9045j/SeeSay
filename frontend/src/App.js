@@ -3,17 +3,32 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './style/global.css';
 import JoinRoom from './pages/joinRoom';
 import WebRtc from './WebRtc';
+import { Toaster } from 'react-hot-toast'
 
 function App() {
-  
+
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<JoinRoom />} />
-        <Route path="/webrtc" element={<WebRtc />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <div>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            success: {
+              theme: {
+                primary: "#10B981",
+              },
+            },
+          }}
+        />
+      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" Component={<JoinRoom />} />
+          <Route path="/webrtc" Component={<WebRtc />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import socketInit from './socket-io/socket';
-import Chat from './messages/chat';
+import toast from 'react-hot-toast';
 import { FaEnvelope } from 'react-icons/fa';
 const connections = new Map();
 
-function WebRtc(props) {
+function WebRtc() {
 
     const location = useLocation();
     const [facingMode, setFacingMode] = useState('user');
@@ -49,6 +49,7 @@ function WebRtc(props) {
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: false }).then(stream => {
             myElementRef.current.srcObject = stream;
+            toast.success("get user stream");
             setStream(stream);
 
         });
@@ -83,7 +84,7 @@ function WebRtc(props) {
 
 
     useEffect(() => {
-
+        console.log(user,room);
         const socket = socketInit();
         socketRef.current = socket;
         socket.on('message', (message) => {
@@ -94,7 +95,6 @@ function WebRtc(props) {
         });
         if (stream) {
 
-            // const socket = socketInit();
             socket.on('newUser', () => {
                 socket.emit('joinUser', {
                     roomId: room,
@@ -275,7 +275,7 @@ function WebRtc(props) {
     return (
 
         <>
-
+        
             <div className="inbox-container">
                 <div className="inbox-icon" onClick={showMessage}>
                     <FaEnvelope />
@@ -304,9 +304,6 @@ function WebRtc(props) {
                     </div>
                 )}
             </div>
-
-
-
 
 
 
