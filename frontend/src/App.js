@@ -24,8 +24,8 @@ function App() {
       </div>
       <BrowserRouter>
         <Routes>
-          <Route path="/" Component={<JoinRoom />} />
-          <Route path="/webrtc" Component={<WebRtc />} />
+          <Route path="/" Component={JoinRoom} />
+          <Route path="/webrtc" Component={WebRtc} />
         </Routes>
       </BrowserRouter>
     </>
