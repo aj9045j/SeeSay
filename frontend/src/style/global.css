@@ -322,15 +322,9 @@ button:active::after {
 
 }
 
-/* #message-box {
-    color: white;
-    margin: 2px;
-    position: absolute;
-    z-index: 1;
-    background-color: #111;
-    width: 20%;
-} */
-
+a:hover {
+    cursor: pointer;
+  }
 
 
 

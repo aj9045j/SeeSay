@@ -40,7 +40,7 @@ function WebRtc() {
         }
     }
     const showMessage = () => {
-        setNewMessage(!newMessage);
+        // setNewMessage(!newMessage);
         setShow(!show);
     };
 
@@ -48,10 +48,13 @@ function WebRtc() {
     useEffect(() => {
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: false }).then(stream => {
+
             myElementRef.current.srcObject = stream;
-            toast.success("get user stream");
+            toast.success("getting user media");
             setStream(stream);
 
+        }).catch( (err) => {
+            toast.error("not getting media");
         });
         return () => {
             if (stream) {
@@ -88,7 +91,8 @@ function WebRtc() {
         const socket = socketInit();
         socketRef.current = socket;
         socket.on('message', (message) => {
-            setNewMessage(true);
+            toast.success("new message");
+            if(!show) setNewMessage(true);
             console.log(message);
 
             setMessages((prevMessages) => [...prevMessages, message]);
@@ -192,6 +196,8 @@ function WebRtc() {
                 let ans = await peer.createAnswer();
 
                 await peer.setLocalDescription(ans);
+
+                toast.success("new user joined")
 
                 socket.emit('sendAns', {
                     clientId: clientId,

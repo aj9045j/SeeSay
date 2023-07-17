@@ -21,13 +21,13 @@ export default function Room() {
         }
     }, [socketRef.current]);
 
-    
+
 
     return (
         <div>
             {/* {console.log("socket from joinb user",socket)} */}
             {/* <Chat socket={socketRef.current}/> */}
-             <WebRtc />
+            <WebRtc />
         </div>
     );
 }

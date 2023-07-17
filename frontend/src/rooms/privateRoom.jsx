@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function PrivateRoom() {
 
     const [name, setName] = useState('');
     const [roomId, setRoomId] = useState('');
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if(name == "" || roomId == ""){
-            alert("PLease fill the field")
+        if (name === '' || roomId === '') {
+            toast.error("fill the information");
+        } else {
+            navigate(`/webrtc?userId=${name}&roomId=${roomId}`);
         }
     };
 
@@ -20,14 +24,11 @@ export default function PrivateRoom() {
     const handleRoomIDChange = (e) => {
         setRoomId(e.target.value);
     };
-    const handleGlobal = (e) => {
-        //  navigate(`/webrtc`);
-    }
 
     return (
         <div>
             <div class="login-box">
-                <form onSubmit={handleSubmit}>
+                <form>
                     <div class="user-box">
                         <input type="text" name="" required onChange={handleChange} />
                         <label>Username</label>
@@ -38,14 +39,14 @@ export default function PrivateRoom() {
 
                     </div>
 
-                    <a href={`/webrtc?userId=${name}&roomId=${roomId}`}>
+                    <a onClick={handleSubmit}>
                         <span></span>
                         <span></span>
                         <span></span>
                         <span></span>
                         Submit
                     </a>
-                    
+
                 </form>
             </div>
 

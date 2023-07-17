@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function GlobalRoom() {
 
     const [name, setName] = useState('');
-    const [roomId, setRoomId] = useState('');
-  //  const navigate = useNavigate();
+
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (name === '') {
+            toast.error("fill the information");
+        } else {
+            navigate(`/webrtc?userId=${name}&roomId=''`);
+        }
     };
 
     const handleChange = (e) => {
         setName(e.target.value);
     };
 
-    const handleRoomIDChange = (e) => {
-        setRoomId(e.target.value);
-    };
-    const handleGlobal = (e) => {
-       // navigate(`/webrtc`);
-    }
 
     return (
         <div>
@@ -32,7 +33,7 @@ export default function GlobalRoom() {
                         <label>Username</label>
                     </div>
 
-                    <a href={`/webrtc?userId=${name}&roomId=${roomId}`}  onClick={handleSubmit}>
+                    <a onClick={handleSubmit}>
                         <span></span>
                         <span></span>
                         <span></span>
