@@ -57,8 +57,12 @@ io.on("connection", (socket) => {
     socket.on('disconnect', async () => {
 
         console.log('A user disconnected', socket.id);
-        if (connectedUsers[socket.id])
+        if (connectedUsers[socket.id]) {
+            io.to(connectedUsers[socket.id].roomId).emit('removeUser', {
+                socketId: socket.id
+            });
             await socket.leave(connectedUsers[socket.id].roomId);
+        }
         delete connectedUsers[socket.id];
 
     });

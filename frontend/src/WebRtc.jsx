@@ -4,6 +4,7 @@ import socketInit from './socket-io/socket';
 import toast from 'react-hot-toast';
 import { FaEnvelope } from 'react-icons/fa';
 const connections = new Map();
+const mediaMap = new Map();
 
 function WebRtc() {
 
@@ -47,21 +48,17 @@ function WebRtc() {
 
     useEffect(() => {
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: false }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: false }).then(streams => {
 
-            myElementRef.current.srcObject = stream;
+            myElementRef.current.srcObject = streams;
             toast.success("getting user media");
-            setStream(stream);
+            setStream(streams);
 
-        }).catch( (err) => {
+        }).catch((err) => {
             toast.error("not getting media");
         });
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        };
     }, [facingMode]);
+
 
     const changeCamera = async () => {
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -79,197 +76,228 @@ function WebRtc() {
     };
 
 
-    const handleTrack = async event => {
-
+    const handleTrack = async ({ event, clientId }) => {
+        console.log(event);
+        mediaMap.set(clientId, event.streams[0].id);
         await setRemoteTracks(prevRemoteTracks => new Map(prevRemoteTracks).set(event.streams[0].id, event.streams[0]));
 
     };
 
+    const removeRemoteTrack = async (trackId) => {
+        setRemoteTracks(prevRemoteTracks => {
+            const updatedRemoteTracks = new Map(prevRemoteTracks);
+            updatedRemoteTracks.delete(trackId);
+            return updatedRemoteTracks;
+        });
+        
+        console.log("remotetrcks",remoteTracks);
+    };
+
 
     useEffect(() => {
-        console.log(user,room);
-        const socket = socketInit();
-        socketRef.current = socket;
-        socket.on('message', (message) => {
-            toast.success("new message");
-            if(!show) setNewMessage(true);
-            console.log(message);
-
-            setMessages((prevMessages) => [...prevMessages, message]);
-        });
+        
         if (stream) {
+            let socket = socketInit();
+            console.log("streams", stream);
+            // if(render) socket = socketInit();
 
-            socket.on('newUser', () => {
-                socket.emit('joinUser', {
-                    roomId: room,
-                    userId: user
-                });
+            console.log(socket);
+            socketRef.current = socket;
+            socket?.on('message', (message) => {
+                toast.success("new message");
+                if (!show) setNewMessage(true);
+                console.log(message);
 
+                setMessages((prevMessages) => [...prevMessages, message]);
             });
+            if (stream) {
 
-            socket.on('createOffer', async ({ roomId, clientId, socketId }) => {
-
-                let peer = await new RTCPeerConnection({
-                    iceServers: [
-                        {
-                            urls: [
-                                'stun:stun.l.google.com:19302',
-                                'stun:global.stun.twilio.com:3478'
-                            ]
-                        }
-                    ]
-                });
-
-                peer.ontrack = event => {
-                    handleTrack(event);
-                };
-
-                peer.onicecandidate = event => {
-
-                    if (event.candidate) {
-                        socket.emit('sendIceCandidate', {
-                            roomId: room,
-                            clientId: clientId,
-                            candidate: event.candidate
-                        });
-                    }
-                }
-
-                if (stream) {
-                    await stream.getTracks().forEach(track => {
-                        peer.addTrack(track, stream);
+                socket?.on('newUser', () => {
+                    socket.emit('joinUser', {
+                        roomId: room,
+                        userId: user
                     });
-                } else {
-                    console.warn('stream not found');
-                }
 
-                await connections.set(clientId, peer);
-                let offer = await peer.createOffer();
-                peer.setLocalDescription(offer);
-
-                socket.emit('sendOffer', {
-                    clientId: clientId,
-                    offer: offer,
-                    socketId: socketId
                 });
 
+                socket?.on('createOffer', async ({ roomId, clientId, socketId }) => {
 
-            });
 
-            socket.on('createAns', async ({ clientId, offer, socketId }) => {
-
-                let peer = await new RTCPeerConnection({
-                    iceServers: [
-                        {
-                            urls: [
-                                'stun:stun.l.google.com:19302',
-                                'stun:global.stun.twilio.com:3478'
-                            ]
-                        }
-                    ]
-                });
-
-                peer.ontrack = async event => {
-                    await handleTrack(event);
-                };
-
-                peer.onicecandidate = event => {
-
-                    if (event.candidate) {
-                        socket.emit('sendIceCandidate', {
-                            roomId: room,
-                            clientId: clientId,
-                            candidate: event.candidate
-                        });
-                    }
-                }
-                connections.set(socketId, peer);
-                if (stream) {
-                    stream.getTracks().forEach(track => {
-                        peer.addTrack(track, stream);
+                    let peer = await new RTCPeerConnection({
+                        iceServers: [
+                            {
+                                urls: [
+                                    'stun:stun.l.google.com:19302',
+                                    'stun:global.stun.twilio.com:3478'
+                                ]
+                            }
+                        ]
                     });
-                } else {
-                    console.warn('stream not found');
-                }
 
-                await peer.setRemoteDescription(offer);
-                let ans = await peer.createAnswer();
+                    peer.ontrack = event => {
+                        handleTrack({
+                            event: event,
+                            clientId: clientId
+                        });
+                    };
 
-                await peer.setLocalDescription(ans);
+                    peer.onicecandidate = event => {
 
-                toast.success("new user joined")
+                        if (event.candidate) {
+                            socket.emit('sendIceCandidate', {
+                                roomId: room,
+                                clientId: clientId,
+                                candidate: event.candidate
+                            });
+                        }
+                    }
 
-                socket.emit('sendAns', {
-                    clientId: clientId,
-                    ans: ans,
-                    socketId: socketId
-                });
+                    if (stream) {
+                        await stream.getTracks().forEach(track => {
+                            peer.addTrack(track, stream);
+                        });
+                    } else {
+                        console.warn('stream not found');
+                    }
 
-                peer.onnegotiationneeded = async event => {
+                    await connections.set(clientId, peer);
+                    let offer = await peer.createOffer();
+                    peer.setLocalDescription(offer);
 
-                    socket.emit('nego', {
+                    socket.emit('sendOffer', {
                         clientId: clientId,
+                        offer: offer,
                         socketId: socketId
                     });
-                };
 
-            });
 
-            socket.on('setAns', async ({ clientId, ans, socketId }) => {
-
-                let peer = connections.get(clientId);
-                await peer.setRemoteDescription(ans);
-
-            });
-
-            socket.on('nego:coffer', async ({ socketId, clientId }) => {
-
-                let peer = connections.get(clientId);
-                let offer = await peer.createOffer();
-                await peer.setLocalDescription(offer);
-                socket.emit('nego:soffer', {
-                    offer: offer,
-                    socketId: socketId,
-                    clientId: clientId
                 });
-            });
 
-            socket.on('nego:cans', async ({ socketId, offer, clientId }) => {
+                socket?.on('createAns', async ({ clientId, offer, socketId }) => {
 
-                let peer = connections.get(socketId);
-                await peer.setRemoteDescription(offer);
-                let ans = await peer.createAnswer(offer);
-                socket.emit('nego:sans', {
-                    socketId: socketId,
-                    ans: ans,
-                    clientId: clientId
+                    let peer = await new RTCPeerConnection({
+                        iceServers: [
+                            {
+                                urls: [
+                                    'stun:stun.l.google.com:19302',
+                                    'stun:global.stun.twilio.com:3478'
+                                ]
+                            }
+                        ]
+                    });
+
+                    peer.ontrack = event => {
+                        handleTrack({
+                            event: event,
+                            clientId: socketId
+                        });
+                    };
+
+                    peer.onicecandidate = event => {
+
+                        if (event.candidate) {
+                            socket.emit('sendIceCandidate', {
+                                roomId: room,
+                                clientId: clientId,
+                                candidate: event.candidate
+                            });
+                        }
+                    }
+                    connections.set(socketId, peer);
+                    if (stream) {
+                        stream.getTracks().forEach(track => {
+                            peer.addTrack(track, stream);
+                        });
+                    } else {
+                        console.warn('stream not found');
+                    }
+
+                    await peer.setRemoteDescription(offer);
+                    let ans = await peer.createAnswer();
+
+                    await peer.setLocalDescription(ans);
+
+                    toast.success("new user joined")
+
+                    socket.emit('sendAns', {
+                        clientId: clientId,
+                        ans: ans,
+                        socketId: socketId
+                    });
+
+                    peer.onnegotiationneeded = async event => {
+
+                        socket.emit('nego', {
+                            clientId: clientId,
+                            socketId: socketId
+                        });
+                    };
+
                 });
-            });
 
-            socket.on('nego:setlocal', async ({ socketId, ans, clientId }) => {
+                socket?.on('setAns', async ({ clientId, ans, socketId }) => {
 
-                let peer = connections.get(clientId);
-                await peer.setRemoteDescription(ans);
+                    let peer = connections.get(clientId);
+                    await peer.setRemoteDescription(ans);
 
-            });
+                });
 
-            socket.on('receiveIceCandidate', async ({ clientId, candidate }) => {
-                candidate.usernameFragment = null;
-                let peer = await connections.get(clientId);
+                socket?.on('nego:coffer', async ({ socketId, clientId }) => {
 
-                if (peer) {
+                    let peer = connections.get(clientId);
+                    let offer = await peer.createOffer();
+                    await peer.setLocalDescription(offer);
+                    socket.emit('nego:soffer', {
+                        offer: offer,
+                        socketId: socketId,
+                        clientId: clientId
+                    });
+                });
 
-                    await peer.addIceCandidate(candidate);
+                socket?.on('nego:cans', async ({ socketId, offer, clientId }) => {
 
-                } else {
-                    console.log('Peer not found');
-                }
+                    let peer = connections.get(socketId);
+                    await peer.setRemoteDescription(offer);
+                    let ans = await peer.createAnswer(offer);
+                    socket.emit('nego:sans', {
+                        socketId: socketId,
+                        ans: ans,
+                        clientId: clientId
+                    });
+                });
 
-            });
+                socket?.on('nego:setlocal', async ({ socketId, ans, clientId }) => {
+
+                    let peer = connections.get(clientId);
+                    await peer.setRemoteDescription(ans);
+
+                });
+
+                socket?.on('receiveIceCandidate', async ({ clientId, candidate }) => {
+                    candidate.usernameFragment = null;
+                    let peer = await connections.get(clientId);
+
+                    if (peer) {
+
+                        await peer.addIceCandidate(candidate);
+
+                    } else {
+                        console.log('Peer not found');
+                    }
+
+                });
+
+                socket?.on("removeUser", async ({ socketId }) => {
+                    connections.delete(socketId);
+                    console.log("media map ehen not deleted",mediaMap);
+                    await removeRemoteTrack(mediaMap.get(socketId));
+                    mediaMap.delete(socketId);
+                    console.log("media map deleted",mediaMap);
+                })
+
+            }
 
         }
-
-
 
 
 
@@ -281,7 +309,7 @@ function WebRtc() {
     return (
 
         <>
-        
+
             <div className="inbox-container">
                 <div className="inbox-icon" onClick={showMessage}>
                     <FaEnvelope />
@@ -332,7 +360,7 @@ function WebRtc() {
 
                 {
                     [...remoteTracks.values()].map((track, index) => {
-
+                        console.log(remoteTracks);
                         return (
                             <div className="video-container">
                                 <video

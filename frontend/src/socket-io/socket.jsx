@@ -7,7 +7,7 @@ const socketInit = () => {
         timeout: 10000,
         transports: ['websocket'],
     };
-    return io.connect('https://video-call-1wu3.onrender.com',options);
+    return io.connect('http://localhost:3001',options);
 };
 
 export default socketInit;

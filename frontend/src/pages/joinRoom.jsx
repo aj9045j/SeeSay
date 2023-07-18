@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// import { useNavigate, Link } from 'react-router-dom';
 import PrivateRoom from '../rooms/privateRoom';
 import GlobalRoom from '../rooms/globalRoom';
 import Interview from '../rooms/interview';

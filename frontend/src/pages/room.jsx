@@ -1,7 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import WebRtc from '../WebRtc';
-import socketInit from '../socket-io/socket';
-import Chat from '../messages/chat';
 
 export default function Room() {
     const socketRef = useRef(null);
