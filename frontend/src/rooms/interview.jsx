@@ -28,6 +28,7 @@ export default function PrivateRoom() {
     return (
         <div>
             <div class="login-box">
+            <h1 style={{color: "white"}}>Interview Room</h1>
                 <form>
                     <div class="user-box">
                         <input type="text" name="" required onChange={handleChange} />

@@ -25,7 +25,7 @@ export default function GlobalRoom() {
     return (
         <div>
             <div class="login-box">
-                <h1>Global Room</h1>
+                <h1 style={{color: "white"}}>Global Room</h1>
 
                 <form onSubmit={handleSubmit}>
                     <div class="user-box">
