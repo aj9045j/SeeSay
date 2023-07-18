@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './style/global.css';
 import JoinRoom from './pages/joinRoom';
-import WebRtc from './WebRtc';
+import WebRtc from './component/WebRtc';
 import { Toaster } from 'react-hot-toast'
 
 function App() {

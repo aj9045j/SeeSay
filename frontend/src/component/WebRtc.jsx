@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import socketInit from './socket-io/socket';
+import socketInit from '../socket-io/socket';
 import toast from 'react-hot-toast';
 import { FaEnvelope } from 'react-icons/fa';
 const connections = new Map();
@@ -22,7 +22,19 @@ function WebRtc() {
     const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
     const [newMessage, setNewMessage] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
 
+    const handleMouseMove = (event) => {
+        const { clientY } = event;
+        const windowHeight = window.innerHeight;
+        const showThreshold = windowHeight * 0.85; 
+        console.log(showThreshold , clientY);
+        if (clientY >= showThreshold) {
+            setShowMenu(true);
+        } else {
+            setShowMenu(false);
+        }
+    };
     const handleInputChange = (event) => {
         event.preventDefault();
         const inputMessage = event.target.value;
@@ -48,7 +60,7 @@ function WebRtc() {
 
     useEffect(() => {
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: false }).then(streams => {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: true }).then(streams => {
 
             myElementRef.current.srcObject = streams;
             toast.success("getting user media");
@@ -89,13 +101,13 @@ function WebRtc() {
             updatedRemoteTracks.delete(trackId);
             return updatedRemoteTracks;
         });
-        
-        console.log("remotetrcks",remoteTracks);
+
+        console.log("remotetrcks", remoteTracks);
     };
 
 
     useEffect(() => {
-        
+
         if (stream) {
             let socket = socketInit();
             console.log("streams", stream);
@@ -288,11 +300,12 @@ function WebRtc() {
                 });
 
                 socket?.on("removeUser", async ({ socketId }) => {
+                    toast.error("user leave");
                     connections.delete(socketId);
-                    console.log("media map ehen not deleted",mediaMap);
+                    console.log("media map ehen not deleted", mediaMap);
                     await removeRemoteTrack(mediaMap.get(socketId));
                     mediaMap.delete(socketId);
-                    console.log("media map deleted",mediaMap);
+                    console.log("media map deleted", mediaMap);
                 })
 
             }
@@ -308,7 +321,7 @@ function WebRtc() {
 
     return (
 
-        <>
+        <div onMouseMove={handleMouseMove}>
 
             <div className="inbox-container">
                 <div className="inbox-icon" onClick={showMessage}>
@@ -340,9 +353,15 @@ function WebRtc() {
             </div>
 
 
+            {showMenu && (
+                <div className="modify">
+                    <button onClick={changeCamera}>Toggle Camera</button>
+                    <button onClick={toggleCamera}>
+                        {cameraEnabled ? 'Turn Off Camera' : 'Turn On Camera'}
+                    </button>
+                </div>
+            )}
 
-            <button onClick={changeCamera}>Toggle Camera</button>
-            <button onClick={toggleCamera}>{cameraEnabled ? 'Turn Off Camera' : 'Turn On Camera'}</button>
             <div className='flex'>
                 <div className="video-container">
                     <video
@@ -381,11 +400,11 @@ function WebRtc() {
                         );
                     })
                 }
-
+    
             </div >
 
 
-        </>
+        </div>
 
     );
 }
