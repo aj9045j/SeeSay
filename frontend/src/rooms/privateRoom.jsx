@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { v4 as uuid } from 'uuid';
 
 export default function PrivateRoom() {
 
     const [name, setName] = useState('');
     const [roomId, setRoomId] = useState('');
     const navigate = useNavigate();
+    const roomIdInputRef = useRef(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -24,18 +26,24 @@ export default function PrivateRoom() {
     const handleRoomIDChange = (e) => {
         setRoomId(e.target.value);
     };
+    const generateRoomid = () => {
+        const unique_id = uuid();
+        setRoomId(unique_id);
+        toast.success(unique_id);
+        roomIdInputRef.current.value = unique_id;
+    }
 
     return (
         <div>
             <div class="login-box">
-            <h1 style={{color: "white"}}>Private Room</h1>
+                <h1 style={{ color: "white" }}>Private Room</h1>
                 <form>
                     <div class="user-box">
                         <input type="text" name="" required onChange={handleChange} />
                         <label>Username</label>
                     </div>
                     <div class="user-box">
-                        <input type="number" name="" required onChange={handleRoomIDChange} />
+                        <input ref={roomIdInputRef} name="" required onChange={handleRoomIDChange} />
                         <label>RoomId</label>
 
                     </div>
@@ -49,6 +57,7 @@ export default function PrivateRoom() {
                     </a>
 
                 </form>
+                <p style={{display: "inline-block", color: "white"}}>don't have room id</p><a onClick={generateRoomid} style={{color: "blue", margin: "5px", textDecoration: "underLine"}}>Generate room id</a>
             </div>
 
         </div>
