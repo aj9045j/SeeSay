@@ -38,7 +38,7 @@ export default function CodeEditor() {
             input: input
         };
 
-        fetch('https://compiler-27z4.onrender.com', {
+        fetch('https://compiler-27z4.onrender.com/compile', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
