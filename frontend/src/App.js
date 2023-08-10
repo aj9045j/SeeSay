@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./style/global.css";
 import JoinRoom from "./pages/joinRoom";
 import WebRtc from "./component/WebRtc";
+import Interview from "./pages/interview"
 import { Toaster } from "react-hot-toast";
 import MobileDetect from "mobile-detect";
 
@@ -41,6 +42,7 @@ function App() {
         <Routes>
           <Route path="/" Component={JoinRoom} />
           <Route path="/webrtc" Component={WebRtc} />
+          <Route path="/interview" Component={Interview} />
         </Routes>
       </BrowserRouter>
     </>

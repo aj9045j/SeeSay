@@ -91,7 +91,12 @@ io.on("connection", (socket) => {
             clientId: clientId
         });
     })
-
+    socket.on("error_sendAns",({clientId,socketId})=>{
+        io.to(socketId).emit("error_setAns", ({
+            clientId: clientId,
+            socketId: socketId
+        }));
+    })
     socket.on('sendIceCandidate', ({ roomId, clientId, candidate }) => {
 
         socket.to(roomId).emit('receiveIceCandidate', { clientId, candidate });

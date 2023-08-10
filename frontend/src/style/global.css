@@ -17,9 +17,9 @@ body {
     width: 400px;
     padding: 40px;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, .5);
+    background: rgba(0, 0, 0, 0.5);
     box-sizing: border-box;
-    box-shadow: 0 15px 25px rgba(0, 0, 0, .6);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.6);
     border-radius: 10px;
 }
 
@@ -54,7 +54,7 @@ body {
     font-size: 16px;
     color: #fff;
     pointer-events: none;
-    transition: .5s;
+    transition: 0.5s;
 }
 
 .login-box .user-box input:focus~label,
@@ -74,18 +74,16 @@ body {
     text-decoration: none;
     text-transform: uppercase;
     overflow: hidden;
-    transition: .5s;
+    transition: 0.5s;
     margin-top: 40px;
-    letter-spacing: 4px
+    letter-spacing: 4px;
 }
 
 .login-box a:hover {
     background: #03e9f4;
     color: #fff;
     border-radius: 5px;
-    box-shadow: 0 0 5px #03e9f4,
-        0 0 25px #03e9f4,
-        0 0 50px #03e9f4,
+    box-shadow: 0 0 5px #03e9f4, 0 0 25px #03e9f4, 0 0 50px #03e9f4,
         0 0 100px #03e9f4;
 }
 
@@ -110,7 +108,7 @@ body {
     height: 100%;
     background: linear-gradient(180deg, transparent, #03e9f4);
     animation: btn-anim2 1s linear infinite;
-    animation-delay: .25s
+    animation-delay: 0.25s;
 }
 
 .login-box a span:nth-child(3) {
@@ -120,7 +118,7 @@ body {
     height: 2px;
     background: linear-gradient(270deg, transparent, #03e9f4);
     animation: btn-anim3 1s linear infinite;
-    animation-delay: .5s
+    animation-delay: 0.5s;
 }
 
 .login-box a span:nth-child(4) {
@@ -130,9 +128,8 @@ body {
     height: 100%;
     background: linear-gradient(360deg, transparent, #03e9f4);
     animation: btn-anim4 1s linear infinite;
-    animation-delay: .75s
+    animation-delay: 0.75s;
 }
-
 
 @keyframes btn-anim1 {
     0% {
@@ -156,8 +153,6 @@ body {
     }
 }
 
-
-
 @keyframes btn-anim3 {
     0% {
         right: -100%;
@@ -168,8 +163,6 @@ body {
         right: 100%;
     }
 }
-
-
 
 @keyframes btn-anim4 {
     0% {
@@ -182,8 +175,8 @@ body {
     }
 }
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -218,23 +211,18 @@ label {
     gap: 10px;
 }
 
-
-
 .video {
-
     object-fit: cover;
     border-radius: 4px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 10px;
     max-width: 1200px;
-
 }
 
 button {
     margin: 0 7px 25px 0;
 }
-
 
 /* CSS */
 button {
@@ -320,15 +308,11 @@ button:hover::after {
 button:active::after {
     transition: 0s;
     transform: translate(0, 5%);
-
 }
 
 a:hover {
     cursor: pointer;
 }
-
-
-
 
 .new-message-dot {
     position: absolute;
@@ -339,7 +323,6 @@ a:hover {
     background-color: red;
     border-radius: 50%;
 }
-
 
 .inbox-container {
     position: relative;
@@ -432,9 +415,6 @@ a:hover {
     background-color: #45a049;
 }
 
-
-
-
 .modify {
     position: absolute;
     bottom: 1%;
@@ -453,10 +433,90 @@ a:hover {
     background-color: white;
     width: 100px;
     height: 30px;
+}
 
+/* codeeditor css */
+
+h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0%;
+    color: black;
+    /* Set the color of the heading text */
+}
+
+.code-mirror-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 60vw;
+}
+
+.c-video {
+    display: flex;
+    flex-direction: column;
+    gap: 45px;
+    padding: 10px;
 
 }
 
+.codeeditor-container {
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
 
+}
 
+.button-container {
+    position: absolute;
+    top: 2px;
+    right: 5px;
+}
+.button-container-1{
+    position: absolute;
+    top: 2px;
+    right: 120px;
+} 
+.video-container-1 {
+    margin: 0px 0px 0px 0px;
+}
 
+.output-box-container {
+    position: relative;
+    flex: 0;
+    margin-top: 10px;
+}
+
+.output-box {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50%;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1;
+    /* Add a higher z-index to make the output box appear above other elements */
+}
+
+.output-content {
+    display: flex;
+    /* justify-content: center;
+    align-items: center; */
+}
+
+.close {
+    font-size: 35px;
+    cursor: pointer;
+}
+
+pre {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow: auto;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}

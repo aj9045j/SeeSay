@@ -13,7 +13,7 @@ export default function PrivateRoom() {
         if (name === '' || roomId === '') {
             toast.error("fill the information");
         } else {
-            navigate(`/webrtc?userId=${name}&roomId=${roomId}`);
+            navigate(`/interview?userId=${name}&roomId=${roomId}`);
         }
     };
 
