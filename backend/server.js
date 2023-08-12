@@ -90,12 +90,17 @@ io.on("connection", (socket) => {
             ans: ans,
             clientId: clientId
         });
+
     })
-    socket.on("error_sendAns",({clientId,socketId})=>{
+    socket.on("error_sendAns", async ({ clientId, socketId }) => {
+
         io.to(socketId).emit("error_setAns", ({
             clientId: clientId,
             socketId: socketId
         }));
+        if (connectedUsers[socketId])
+            delete connectedUsers[socketId];
+
     })
     socket.on('sendIceCandidate', ({ roomId, clientId, candidate }) => {
 
@@ -111,6 +116,16 @@ io.on("connection", (socket) => {
         });
 
     });
+
+    socket.on("code-update", ({ value }) => {
+        if (connectedUsers[socket.id]) {
+            const clients = Array.from(io.sockets.adapter.rooms.get(connectedUsers[socket.id].roomId) || []);
+            clients.forEach((client) => {
+                socket.to(client).emit("code-change", ({ value: value }));
+            })
+        }
+    })
+
 
 })
 

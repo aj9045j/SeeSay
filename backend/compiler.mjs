@@ -45,7 +45,7 @@ app.post("/compile", (req, res) => {
             console.log("Input file saved:", inputFileName);
 
             // Compile the code using GCC
-            exec(`g++  ${codeFileName} -o compiled_program`, (error, stdout, stderr) => {
+            exec(`g++ "${codeFileName}" -o compiled_program`, (error, stdout, stderr) => {
                 // Clean up the temporary files
                 fs.unlink(codeFileName, () => { });
 
@@ -57,7 +57,7 @@ app.post("/compile", (req, res) => {
                 }
                 const compiledProgramPath = path.join(__dirname, "compiled_program");
                 // Run the compiled program with input piping
-                const childProcess = exec(`${compiledProgramPath} < ${inputFileName}`, (error, stdout, stderr) => {
+                const childProcess = exec(`"${compiledProgramPath}" < "${inputFileName}"`, (error, stdout, stderr) => {
                     // Clean up the compiled program
                     fs.unlink(inputFileName, () => { });
                     fs.unlink("compiled_program", () => { });

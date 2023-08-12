@@ -1,40 +1,110 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import socketInit from "../socket-io/socket";
 import toast from "react-hot-toast";
-import { FaEnvelope } from "react-icons/fa";
-import { BsMicMute, BsMicFill } from "react-icons/bs";
-import { PiCameraRotateDuotone } from "react-icons/pi";
-import { FiCameraOff, FiCamera } from "react-icons/fi";
-import CodeEditor from '../component/CodeEditor';
+import CodeMirror from '@uiw/react-codemirror';
+import { cpp } from '@codemirror/lang-cpp';
+import { sublime } from '@uiw/codemirror-theme-sublime'
+import { githubDark } from '@uiw/codemirror-theme-github';
 
 const connections = new Map();
 const mediaMap = new Map();
 
+const OutputModal = ({ output, onClose }) => {
+    return (
+        <div className="output-box" style={{ display: output ? 'block' : 'none' }}>
+            <div className="output-content">
+                <span className="close" onClick={onClose}>&times;</span>
+                <pre>{output}</pre>
+            </div>
+        </div>
+    );
+};
+
 export default function Interview() {
     const location = useLocation();
-    const [facingMode, setFacingMode] = useState("user");
     const localStream = useRef(null);
-    const remoteStream = useRef(null);
     const searchParams = new URLSearchParams(location.search);
     const user = searchParams.get("userId");
     const room = searchParams.get("roomId");
     const [stream, setStream] = useState(null);
     const [remoteTracks, setRemoteTracks] = useState(new Map());
-    const [cameraEnabled, setCameraEnabled] = useState(true);
-    const [audioEnabled, setAudioEnabled] = useState(true);
-    const [show, setShow] = useState(false);
-    const [message, setMessage] = useState("");
-    const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
-    const [newMessage, setNewMessage] = useState(false);
-    const [showMenu, setShowMenu] = useState(false);
     const [showButton, setButton] = useState(true);
+    const [code, setCode] = useState("");
+    const [output, setOutput] = useState('');
+    const [input, setInput] = useState('');
+
+    const [windowDimensions, setWindowDimensions] = useState({
+        width: window.innerWidth,
+        height: window.innerHeight,
+    });
+
+    const onChange = React.useCallback((value, viewUpdate) => {
+        setCode(value);
+        socketRef.current?.emit("code-update", ({ value: value }));
+
+    }, []);
+    socketRef.current?.on("code-change", ({ value }) => {
+        setCode(value);
+    })
+    const changeInput = React.useCallback((value, viewUpdate) => {
+        setInput(value);
+    }, []);
+
+    const handleCompile = () => {
+        const data = {
+            code: code,
+            input: input
+        };
+        //'https://compiler-27z4.onrender.com/compile'
+        fetch('https://compiler-27z4.onrender.com/compile', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.error) {
+                    setOutput(`Error: ${data.error}`);
+                } else {
+                    setOutput(`Output:\n${data.output}`);
+                }
+            })
+            .catch((error) => {
+                setOutput(`Error: ${error.message}`);
+            });
+    };
+
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowDimensions({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    const handleCloseModal = () => {
+        setOutput('');
+    };
 
     useEffect(() => {
         navigator.mediaDevices
             .getUserMedia({
-                video: { facingMode: { exact: facingMode } },
+                video: {
+                    width: { ideal: 1280, max: 1920 },
+                    height: { ideal: 720, max: 1080 },
+                    frameRate: { ideal: 30, max: 60 },
+                },
                 audio: true,
             })
             .then(async (streams) => {
@@ -43,9 +113,10 @@ export default function Interview() {
                 await setStream(streams);
             })
             .catch((err) => {
+                console.log(err);
                 toast.error("not getting media");
             });
-    }, [facingMode]);
+    }, []);
 
     const handleTrack = async ({ event, clientId }) => {
         mediaMap.set(clientId, event.streams[0].id);
@@ -66,24 +137,15 @@ export default function Interview() {
     };
 
     const startConnection = async () => {
-    
+
         toast.success("Connecting...");
         setButton(false);
         let socket = await socketInit();
-        console.log("streams", stream);
         // if(render) socket = socketInit();
-
-        console.log(socket);
         socketRef.current = socket;
-        socket?.on("message", (message) => {
-            toast.success("new message");
-            if (!show) setNewMessage(true);
-            console.log(message);
-
-            setMessages((prevMessages) => [...prevMessages, message]);
-        });
         if (stream) {
             socket?.on("newUser", () => {
+
                 socket.emit("joinUser", {
                     roomId: room,
                     userId: user,
@@ -139,6 +201,7 @@ export default function Interview() {
             });
 
             socket?.on("createAns", async ({ clientId, offer, socketId }) => {
+
                 if (connections.size > 0) {
                     socket.emit("error_sendAns", {
                         clientId: clientId,
@@ -146,6 +209,7 @@ export default function Interview() {
                     });
                     return;
                 }
+
                 let peer = await new RTCPeerConnection({
                     iceServers: [
                         {
@@ -218,7 +282,7 @@ export default function Interview() {
                     clientId: clientId,
                 });
             });
-            socket?.on("error_setAns",({socketId,clientId})=>{
+            socket?.on("error_setAns", ({ socketId, clientId }) => {
                 toast.error("room already filled");
             })
             socket?.on("nego:cans", async ({ socketId, offer, clientId }) => {
@@ -256,6 +320,8 @@ export default function Interview() {
                 mediaMap.delete(socketId);
                 console.log("media map deleted", mediaMap);
             });
+
+
         }
 
     };
@@ -263,7 +329,39 @@ export default function Interview() {
 
     return (
         <div className='codeeditor-container'>
-            <CodeEditor />
+            <div className="container">
+                <div className="code-mirror-container">
+                    <CodeMirror
+                        className="codemirror"
+                        value={code}
+                        mode="text/x-c++src"
+                        extensions={[cpp()]}
+                        theme={githubDark}
+                        onChange={onChange}
+                        height={`${windowDimensions.height - 228}px`}
+                        width={`${windowDimensions.width / 1.7}px`}
+                    />
+                    <h1>INPUT</h1>
+                    <CodeMirror
+                        className='codemirror_input'
+                        value={input}
+                        theme={sublime}
+                        height='200px'
+                        width={`${windowDimensions.width / 1.7}px`}
+                        onChange={changeInput}
+                    />
+                </div>
+                <div className="button-container">
+                    <button className="compile-button" onClick={handleCompile}>
+                        Compile
+                    </button>
+                </div>
+                <OutputModal output={output} onClose={handleCloseModal} />
+
+
+
+
+            </div >
             {showButton && (<div className="button-container-1">
                 <button
                     className=".button-container"
