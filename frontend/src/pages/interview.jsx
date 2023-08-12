@@ -33,10 +33,17 @@ export default function Interview() {
     const [remoteTracks, setRemoteTracks] = useState(new Map());
     const socketRef = useRef(null);
     const [showButton, setButton] = useState(true);
-    const [code, setCode] = useState("");
     const [output, setOutput] = useState('');
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const [code, setCode] = useState(`#include<bits/stdc++.h>
+using namespace std;
+        
+int main() {
+                
+}`);
+
 
     const [windowDimensions, setWindowDimensions] = useState({
         width: window.innerWidth,
@@ -348,7 +355,7 @@ export default function Interview() {
                         height={`${windowDimensions.height - 228}px`}
                         width={`${windowDimensions.width / 1.7}px`}
                     />
-                    <h1>INPUT</h1>
+                    <h2 style={{ fontFamily: "monospace", color: "white", margin: "0" }}>Input:</h2>
                     <CodeMirror
                         className='codemirror_input'
                         value={input}
@@ -363,15 +370,18 @@ export default function Interview() {
                         Compile
                     </button>
                 </div>
-                {isLoading ? (
-                    <div className="output-box" style={{ display: output ? 'block' : 'none' }}>
-                        <SkeletonTheme baseColor="#202020" highlightColor="#444">
+                {!isLoading ?
+                    (<OutputModal output={output} onClose={handleCloseModal} />) :
+                    (<div className="output-box" style={{ display: 'block' }}>
+                        <SkeletonTheme baseColor="#2010" highlightColor="#445">
+                            <h5 style={{ margin: "0" }}>Output</h5>
                             <Skeleton
                                 count={5} />
                         </SkeletonTheme>
                     </div>
-                )
-                    : (<OutputModal output={output} onClose={handleCloseModal} />)}
+                    )
+
+                }
 
 
 
