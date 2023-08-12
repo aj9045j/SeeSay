@@ -6,6 +6,8 @@ import CodeMirror from '@uiw/react-codemirror';
 import { cpp } from '@codemirror/lang-cpp';
 import { sublime } from '@uiw/codemirror-theme-sublime'
 import { githubDark } from '@uiw/codemirror-theme-github';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 const connections = new Map();
 const mediaMap = new Map();
@@ -34,6 +36,7 @@ export default function Interview() {
     const [code, setCode] = useState("");
     const [output, setOutput] = useState('');
     const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const [windowDimensions, setWindowDimensions] = useState({
         width: window.innerWidth,
@@ -53,6 +56,7 @@ export default function Interview() {
     }, []);
 
     const handleCompile = () => {
+        setIsLoading(true);
         const data = {
             code: code,
             input: input
@@ -75,6 +79,8 @@ export default function Interview() {
             })
             .catch((error) => {
                 setOutput(`Error: ${error.message}`);
+            }).finally(() => {
+                setIsLoading(false);
             });
     };
 
@@ -329,6 +335,7 @@ export default function Interview() {
 
     return (
         <div className='codeeditor-container'>
+
             <div className="container">
                 <div className="code-mirror-container">
                     <CodeMirror
@@ -356,7 +363,15 @@ export default function Interview() {
                         Compile
                     </button>
                 </div>
-                <OutputModal output={output} onClose={handleCloseModal} />
+                {isLoading ? (
+                    <div className="output-box" style={{ display: output ? 'block' : 'none' }}>
+                        <SkeletonTheme baseColor="#202020" highlightColor="#444">
+                            <Skeleton
+                                count={5} />
+                        </SkeletonTheme>
+                    </div>
+                )
+                    : (<OutputModal output={output} onClose={handleCloseModal} />)}
 
 
 
