@@ -68,8 +68,8 @@ int main() {
             code: code,
             input: input
         };
-        //'https://compiler-27z4.onrender.com/compile'
-        fetch('https://compiler-27z4.onrender.com/compile', {
+        //https://compiler-iv3c.onrender.com
+        fetch('https://compiler-iv3c.onrender.com', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
