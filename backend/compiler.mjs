@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 import path from "path";
 
 const app = express();
-const PORT = 5000;
+const PORT = 4000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(cors());
@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 app.post("/compile", (req, res) => {
     const code = req.body.code;
     const input = req.body.input;
-
+    console.log("click",code);
     // Generate unique filenames for the temporary files
     const codeFileName = path.join(__dirname, `temp_${nanoid()}.cpp`);
     const inputFileName = path.join(__dirname, `input_${nanoid()}.txt`);
