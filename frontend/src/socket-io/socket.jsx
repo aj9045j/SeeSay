@@ -7,7 +7,7 @@ const socketInit = () => {
         timeout: 10000,
         transports: ['websocket'],
     };
-    return io.connect('http://localhost:5000', options);
+    return io.connect('https://seesay.onrender.com', options);
 };
 
 export default socketInit;

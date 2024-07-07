@@ -69,7 +69,7 @@ int main() {
             input: input
         };
         //https://compiler-iv3c.onrender.com
-        fetch('http://localhost:4000/compile', {
+        fetch('https://compiler-iv3c.onrender.com', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
