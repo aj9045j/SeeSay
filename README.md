@@ -46,7 +46,8 @@ Welcome to **SeeSay**, a state-of-the-art video calling application built to cat
     ```
 4. **Start the Backend Server**:
     ```bash
-    npm start
+    node server.js
+    node compiler.mjs
     ```
 
 ### Frontend Setup
